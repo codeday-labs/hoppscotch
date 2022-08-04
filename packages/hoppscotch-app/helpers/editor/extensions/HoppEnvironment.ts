@@ -17,6 +17,7 @@ import {
 } from "~/newstore/environments"
 
 const HOPP_ENVIRONMENT_REGEX = /(<<\w+>>)/g
+const HOPP_VARIABLE_REGEX = /({{\w+}})/g
 
 const HOPP_ENV_HIGHLIGHT =
   "cursor-help transition rounded px-1 focus:outline-none mx-0.5 env-highlight"
@@ -25,7 +26,10 @@ const HOPP_ENV_HIGHLIGHT_FOUND =
 const HOPP_ENV_HIGHLIGHT_NOT_FOUND =
   "bg-red-500 text-accentContrast hover:bg-red-600"
 
-const cursorTooltipField = (aggregateEnvs?: AggregateEnvironment[]) =>
+const cursorTooltipField = (
+  aggregateEnvs?: AggregateEnvironment[],
+  aggregateVars?: HoppRESTVar[]
+) =>
   hoverTooltip(
     (view, pos, side) => {
       const { from, to, text } = view.state.doc.lineAt(pos)
@@ -40,6 +44,10 @@ const cursorTooltipField = (aggregateEnvs?: AggregateEnvironment[]) =>
       // )
       // if (!HOPP_ENVIRONMENT_REGEX.test(word)) return null
 
+      const aggregateValue = aggregateEnvs || aggregateVars
+      const CURRENT_REGEX_EXPRESSION =
+        aggregateValue === aggregateVars ? /(<<\w+>>)/g : /({{\w+}})/g
+
       // Tracking the start and the end of the words
       let start = pos
       let end = pos
@@ -50,25 +58,28 @@ const cursorTooltipField = (aggregateEnvs?: AggregateEnvironment[]) =>
       if (
         (start === pos && side < 0) ||
         (end === pos && side > 0) ||
-        !HOPP_ENVIRONMENT_REGEX.test(
+        !CURRENT_REGEX_EXPRESSION.test(
           text.slice(start - from - 2, end - from + 2)
         )
       )
         return null
 
-      const envName =
-        aggregateEnvs.find(
-          (env) => env.key === text.slice(start - from, end - from)
-          // env.key === word.slice(wordSelection.from + 2, wordSelection.to - 2)
-        )?.sourceEnv ?? "choose an environment"
+      let envName: string
+      if (aggregateValue === aggregateEnvs) {
+        envName =
+          aggregateEnvs.find(
+            (env) => env.key === text.slice(start - from, end - from)
+            // env.key === word.slice(wordSelection.from + 2, wordSelection.to - 2)
+          )?.sourceEnv ?? "choose an environment"
+      }
 
-      const envValue =
+      const value =
         aggregateEnvs.find(
           (env) => env.key === text.slice(start - from, end - from)
           // env.key === word.slice(wordSelection.from + 2, wordSelection.to - 2)
         )?.value ?? "not found"
 
-      const result = parseTemplateStringE(envValue, aggregateEnvs)
+      const result = parseTemplateStringE(value, aggregateEnvs)
 
       const finalEnv = E.isLeft(result) ? "error" : result.right
 
