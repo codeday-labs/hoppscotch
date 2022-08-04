@@ -114,36 +114,3 @@ export const environmentHighlightStyle = (aggregateEnvs: HoppRESTVar[]) => {
     }
   )
 }
-
-export class HoppReactiveVarPlugin {
-  private compartment = new Compartment()
-
-  private envs: HoppRESTVar[] = []
-
-  constructor(
-    envsRef: Ref<HoppRESTVar[]>,
-    private editorView: Ref<EditorView | undefined>
-  ) {
-    watch(
-      envsRef,
-      (envs) => {
-        this.envs = envs
-
-        this.editorView.value?.dispatch({
-          effects: this.compartment.reconfigure([
-            cursorTooltipField(this.envs),
-            environmentHighlightStyle(this.envs),
-          ]),
-        })
-      },
-      { immediate: true }
-    )
-  }
-
-  get extension() {
-    return this.compartment.of([
-      cursorTooltipField(this.envs),
-      environmentHighlightStyle(this.envs),
-    ])
-  }
-}

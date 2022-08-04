@@ -37,10 +37,12 @@ import { tooltips } from "@codemirror/tooltip"
 import { history, historyKeymap } from "@codemirror/history"
 import { HoppRESTVar } from "@hoppscotch/data"
 import { inputTheme } from "~/helpers/editor/themes/baseTheme"
-import { HoppReactiveEnvPlugin } from "~/helpers/editor/extensions/HoppEnvironment"
+import {
+  HoppReactiveEnvPlugin,
+  HoppReactiveVarPlugin,
+} from "~/helpers/editor/extensions/HoppEnvironment"
 import { useReadonlyStream } from "~/helpers/utils/composables"
 import { AggregateEnvironment, aggregateEnvs$ } from "~/newstore/environments"
-import { HoppReactiveVarPlugin } from "~/helpers/editor/extensions/HoppVariable"
 import { restVars$ } from "~/newstore/RESTSession"
 
 const props = withDefaults(

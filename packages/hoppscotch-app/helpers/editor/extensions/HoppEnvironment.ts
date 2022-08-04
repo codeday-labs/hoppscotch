@@ -8,7 +8,7 @@ import {
   ViewPlugin,
 } from "@codemirror/view"
 import * as E from "fp-ts/Either"
-import { parseTemplateStringE } from "@hoppscotch/data"
+import { HoppRESTVar, parseTemplateStringE } from "@hoppscotch/data"
 import { StreamSubscriberFunc } from "~/helpers/utils/composables"
 import {
   AggregateEnvironment,
@@ -25,7 +25,7 @@ const HOPP_ENV_HIGHLIGHT_FOUND =
 const HOPP_ENV_HIGHLIGHT_NOT_FOUND =
   "bg-red-500 text-accentContrast hover:bg-red-600"
 
-const cursorTooltipField = (aggregateEnvs: AggregateEnvironment[]) =>
+const cursorTooltipField = (aggregateEnvs?: AggregateEnvironment[]) =>
   hoverTooltip(
     (view, pos, side) => {
       const { from, to, text } = view.state.doc.lineAt(pos)
@@ -190,6 +190,39 @@ export class HoppReactiveEnvPlugin {
     return this.compartment.of([
       cursorTooltipField(this.envs),
       environmentHighlightStyle(this.envs),
+    ])
+  }
+}
+
+export class HoppReactiveVarPlugin {
+  private compartment = new Compartment()
+
+  private vars: HoppRESTVar[] = []
+
+  constructor(
+    varsRef: Ref<HoppRESTVar[]>,
+    private editorView: Ref<EditorView | undefined>
+  ) {
+    watch(
+      varsRef,
+      (vars) => {
+        this.vars = vars
+
+        this.editorView.value?.dispatch({
+          effects: this.compartment.reconfigure([
+            cursorTooltipField(this.vars),
+            environmentHighlightStyle(this.vars),
+          ]),
+        })
+      },
+      { immediate: true }
+    )
+  }
+
+  get extension() {
+    return this.compartment.of([
+      cursorTooltipField(this.envs),
+      environmentHighlightStyle(this.vars),
     ])
   }
 }
