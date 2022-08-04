@@ -221,7 +221,7 @@ export class HoppReactiveVarPlugin {
 
   get extension() {
     return this.compartment.of([
-      cursorTooltipField(this.envs),
+      cursorTooltipField(this.vars),
       environmentHighlightStyle(this.vars),
     ])
   }
