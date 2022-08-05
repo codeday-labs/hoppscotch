@@ -27,7 +27,7 @@ const HOPP_ENV_HIGHLIGHT_NOT_FOUND =
   "bg-red-500 text-accentContrast hover:bg-red-600"
 
 const cursorTooltipField = (
-  aggregateEnvs: AggregateEnvironment[] | HoppRESTVar[]
+  aggregateValues: AggregateEnvironment[] | HoppRESTVar[]
 ) =>
   hoverTooltip(
     (view, pos, side) => {
@@ -60,18 +60,18 @@ const cursorTooltipField = (
         return null
 
       const envName =
-        aggregateEnvs.find(
+        aggregateValues.find(
           (env) => env.key === text.slice(start - from, end - from)
           // env.key === word.slice(wordSelection.from + 2, wordSelection.to - 2)
         )?.sourceEnv ?? "choose an environment"
 
       const value =
-        aggregateEnvs.find(
+        aggregateValues.find(
           (env) => env.key === text.slice(start - from, end - from)
           // env.key === word.slice(wordSelection.from + 2, wordSelection.to - 2)
         )?.value ?? "not found"
 
-      const result = parseTemplateStringE(value, aggregateEnvs)
+      const result = parseTemplateStringE(value, aggregateValues)
 
       const finalEnv = E.isLeft(result) ? "error" : result.right
 
