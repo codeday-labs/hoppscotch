@@ -27,8 +27,7 @@ const HOPP_ENV_HIGHLIGHT_NOT_FOUND =
   "bg-red-500 text-accentContrast hover:bg-red-600"
 
 const cursorTooltipField = (
-  aggregateEnvs?: AggregateEnvironment[],
-  aggregateVars?: HoppRESTVar[]
+  aggregateEnvs: AggregateEnvironment[] | HoppRESTVar[]
 ) =>
   hoverTooltip(
     (view, pos, side) => {
@@ -44,10 +43,6 @@ const cursorTooltipField = (
       // )
       // if (!HOPP_ENVIRONMENT_REGEX.test(word)) return null
 
-      const aggregateValue = aggregateEnvs || aggregateVars
-      const CURRENT_REGEX_EXPRESSION =
-        aggregateValue === aggregateVars ? /(<<\w+>>)/g : /({{\w+}})/g
-
       // Tracking the start and the end of the words
       let start = pos
       let end = pos
@@ -58,20 +53,17 @@ const cursorTooltipField = (
       if (
         (start === pos && side < 0) ||
         (end === pos && side > 0) ||
-        !CURRENT_REGEX_EXPRESSION.test(
+        !HOPP_ENVIRONMENT_REGEX.test(
           text.slice(start - from - 2, end - from + 2)
         )
       )
         return null
 
-      let envName: string
-      if (aggregateValue === aggregateEnvs) {
-        envName =
-          aggregateEnvs.find(
-            (env) => env.key === text.slice(start - from, end - from)
-            // env.key === word.slice(wordSelection.from + 2, wordSelection.to - 2)
-          )?.sourceEnv ?? "choose an environment"
-      }
+      const envName =
+        aggregateEnvs.find(
+          (env) => env.key === text.slice(start - from, end - from)
+          // env.key === word.slice(wordSelection.from + 2, wordSelection.to - 2)
+        )?.sourceEnv ?? "choose an environment"
 
       const value =
         aggregateEnvs.find(
