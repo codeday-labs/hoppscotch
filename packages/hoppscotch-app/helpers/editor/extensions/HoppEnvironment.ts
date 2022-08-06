@@ -26,6 +26,14 @@ const HOPP_ENV_HIGHLIGHT_FOUND =
 const HOPP_ENV_HIGHLIGHT_NOT_FOUND =
   "bg-red-500 text-accentContrast hover:bg-red-600"
 
+const isOfTypeEnv = (input: any) => {
+  let flag: boolean = false
+  for (const variable of input) {
+    if (variable.sourceEnv !== undefined) flag = true
+  }
+  return flag
+}
+
 const cursorTooltipField = (
   aggregateValues: AggregateEnvironment[] | HoppRESTVar[]
 ) =>
@@ -43,6 +51,9 @@ const cursorTooltipField = (
       // )
       // if (!HOPP_ENVIRONMENT_REGEX.test(word)) return null
 
+      // envType checks if the paraneter is dealing with an AggregateEnvironment[] or HoppRESTVar[] type
+      const envType: boolean = isOfTypeEnv(aggregateValues)
+      console.log("aggregateValues: ", aggregateValues)
       // Tracking the start and the end of the words
       let start = pos
       let end = pos
@@ -50,30 +61,35 @@ const cursorTooltipField = (
       while (start > from && /\w/.test(text[start - from - 1])) start--
       while (end < to && /\w/.test(text[end - from])) end++
 
+      const HOPP_CURRENT_REGEX = envType
+        ? HOPP_ENVIRONMENT_REGEX
+        : HOPP_VARIABLE_REGEX
+
       if (
         (start === pos && side < 0) ||
         (end === pos && side > 0) ||
-        !HOPP_ENVIRONMENT_REGEX.test(
-          text.slice(start - from - 2, end - from + 2)
-        )
+        !HOPP_CURRENT_REGEX.test(text.slice(start - from - 2, end - from + 2))
       )
         return null
 
-      const envName =
-        aggregateValues.find(
-          (env) => env.key === text.slice(start - from, end - from)
-          // env.key === word.slice(wordSelection.from + 2, wordSelection.to - 2)
-        )?.sourceEnv ?? "choose an environment"
+      let envName: string = ""
+      if (isOfTypeEnv(aggregateValues)) {
+        envName =
+          aggregateValues.find(
+            (env) => env.key === text.slice(start - from, end - from)
+            // env.key === word.slice(wordSelection.from + 2, wordSelection.to - 2)
+          )?.sourceEnv ?? "choose an environment"
+      }
 
       const value =
         aggregateValues.find(
-          (env) => env.key === text.slice(start - from, end - from)
+          (x) => x.key === text.slice(start - from, end - from)
           // env.key === word.slice(wordSelection.from + 2, wordSelection.to - 2)
         )?.value ?? "not found"
 
       const result = parseTemplateStringE(value, aggregateValues)
 
-      const finalEnv = E.isLeft(result) ? "error" : result.right
+      const finalValue = E.isLeft(result) ? "error" : result.right
 
       return {
         pos: start,
@@ -83,8 +99,10 @@ const cursorTooltipField = (
         create() {
           const dom = document.createElement("span")
           const xmp = document.createElement("xmp")
-          xmp.textContent = finalEnv
-          dom.appendChild(document.createTextNode(`${envName} `))
+          xmp.textContent = finalValue
+          if (envType) {
+            dom.appendChild(document.createTextNode(`${envName} `))
+          }
           dom.appendChild(xmp)
           dom.className = "tooltip-theme"
           return { dom }
@@ -97,8 +115,11 @@ const cursorTooltipField = (
     { hoverTime: 1 } as any
   )
 
-function checkEnv(env: string, aggregateEnvs: AggregateEnvironment[]) {
-  const className = aggregateEnvs.find(
+function checkEnv(
+  env: string,
+  aggregateValues: AggregateEnvironment[] | HoppRESTVar[]
+) {
+  const className = aggregateValues.find(
     (k: { key: string }) => k.key === env.slice(2, -2)
   )
     ? HOPP_ENV_HIGHLIGHT_FOUND
@@ -109,16 +130,25 @@ function checkEnv(env: string, aggregateEnvs: AggregateEnvironment[]) {
   })
 }
 
-const getMatchDecorator = (aggregateEnvs: AggregateEnvironment[]) =>
-  new MatchDecorator({
-    regexp: HOPP_ENVIRONMENT_REGEX,
-    decoration: (m) => checkEnv(m[0], aggregateEnvs),
+const getMatchDecorator = (
+  aggregateValues: AggregateEnvironment[] | HoppRESTVar[]
+) => {
+  // envType checks if the paraneter is dealing with an AggregateEnvironment[] or HoppRESTVar[] type
+  const envType: boolean = isOfTypeEnv(aggregateValues)
+
+  const HOPP_CURRENT_REGEX = envType
+    ? HOPP_ENVIRONMENT_REGEX
+    : HOPP_VARIABLE_REGEX
+  return new MatchDecorator({
+    regexp: HOPP_CURRENT_REGEX,
+    decoration: (m) => checkEnv(m[0], aggregateValues),
   })
+}
 
 export const environmentHighlightStyle = (
-  aggregateEnvs: AggregateEnvironment[]
+  aggregateValues: AggregateEnvironment[] | HoppRESTVar[]
 ) => {
-  const decorator = getMatchDecorator(aggregateEnvs)
+  const decorator = getMatchDecorator(aggregateValues)
 
   return ViewPlugin.define(
     (view) => ({
