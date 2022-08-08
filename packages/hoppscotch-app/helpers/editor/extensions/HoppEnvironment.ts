@@ -115,7 +115,7 @@ const cursorTooltipField = (
     { hoverTime: 1 } as any
   )
 
-function checkExistence(
+function checkEnv(
   env: string,
   aggregateValues: AggregateEnvironment[] | HoppRESTVar[]
 ) {
