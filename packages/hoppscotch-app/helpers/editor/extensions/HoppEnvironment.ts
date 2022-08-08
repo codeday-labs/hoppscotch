@@ -141,7 +141,7 @@ const getMatchDecorator = (
     : HOPP_VARIABLE_REGEX
   return new MatchDecorator({
     regexp: HOPP_CURRENT_REGEX,
-    decoration: (m) => checkExistence(m[0], aggregateValues),
+    decoration: (m) => checkEnv(m[0], aggregateValues),
   })
 }
 
