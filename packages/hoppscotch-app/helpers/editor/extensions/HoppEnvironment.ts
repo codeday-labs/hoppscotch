@@ -53,7 +53,7 @@ const cursorTooltipField = (
 
       // envType checks if the paraneter is dealing with an AggregateEnvironment[] or HoppRESTVar[] type
       const envType: boolean = isOfTypeEnv(aggregateValues)
-      console.log("aggregateValues: ", aggregateValues)
+
       // Tracking the start and the end of the words
       let start = pos
       let end = pos
@@ -115,7 +115,7 @@ const cursorTooltipField = (
     { hoverTime: 1 } as any
   )
 
-function checkEnv(
+function checkExistence(
   env: string,
   aggregateValues: AggregateEnvironment[] | HoppRESTVar[]
 ) {
@@ -133,7 +133,7 @@ function checkEnv(
 const getMatchDecorator = (
   aggregateValues: AggregateEnvironment[] | HoppRESTVar[]
 ) => {
-  // envType checks if the paraneter is dealing with an AggregateEnvironment[] or HoppRESTVar[] type
+  // envType checks if the parameter is dealing with an AggregateEnvironment[] or HoppRESTVar[] type
   const envType: boolean = isOfTypeEnv(aggregateValues)
 
   const HOPP_CURRENT_REGEX = envType
@@ -141,7 +141,7 @@ const getMatchDecorator = (
     : HOPP_VARIABLE_REGEX
   return new MatchDecorator({
     regexp: HOPP_CURRENT_REGEX,
-    decoration: (m) => checkEnv(m[0], aggregateValues),
+    decoration: (m) => checkExistence(m[0], aggregateValues),
   })
 }
 
