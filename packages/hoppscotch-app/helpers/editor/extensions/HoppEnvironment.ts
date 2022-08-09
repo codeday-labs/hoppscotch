@@ -16,8 +16,8 @@ import {
   getAggregateEnvs,
 } from "~/newstore/environments"
 
-const HOPP_ENVIRONMENT_REGEX = /(<<\w+>>)/g
-const HOPP_VARIABLE_REGEX = /({{\w+}})/g
+const HOPP_ENVIRONMENT_REGEX = /(<<[a-zA-Z0-9-_]+>>)/g
+const HOPP_VARIABLE_REGEX = /({{[a-zA-Z0-9-_]+}})/g
 
 const HOPP_ENV_HIGHLIGHT =
   "cursor-help transition rounded px-1 focus:outline-none mx-0.5 env-highlight"
@@ -58,8 +58,9 @@ const cursorTooltipField = (
       let start = pos
       let end = pos
 
-      while (start > from && /\w/.test(text[start - from - 1])) start--
-      while (end < to && /\w/.test(text[end - from])) end++
+      while (start > from && /[a-zA-Z0-9-_]+/.test(text[start - from - 1]))
+        start--
+      while (end < to && /[a-zA-Z0-9-_]+/.test(text[end - from])) end++
 
       const HOPP_CURRENT_REGEX = envType
         ? HOPP_ENVIRONMENT_REGEX
@@ -75,7 +76,7 @@ const cursorTooltipField = (
       let envName: string = ""
       if (isOfTypeEnv(aggregateValues)) {
         envName =
-          aggregateValues.find(
+          (<AggregateEnvironment[]>aggregateValues).find(
             (env) => env.key === text.slice(start - from, end - from)
             // env.key === word.slice(wordSelection.from + 2, wordSelection.to - 2)
           )?.sourceEnv ?? "choose an environment"
