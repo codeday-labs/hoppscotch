@@ -37,10 +37,7 @@ import { tooltips } from "@codemirror/tooltip"
 import { history, historyKeymap } from "@codemirror/history"
 import { HoppRESTVar } from "@hoppscotch/data"
 import { inputTheme } from "~/helpers/editor/themes/baseTheme"
-import {
-  HoppReactiveEnvPlugin,
-  HoppReactiveVarPlugin,
-} from "~/helpers/editor/extensions/HoppEnvironment"
+import { HoppReactivePlugin } from "~/helpers/editor/extensions/HoppEnvironment"
 import { useReadonlyStream } from "~/helpers/utils/composables"
 import { AggregateEnvironment, aggregateEnvs$ } from "~/newstore/environments"
 import { restVars$ } from "~/newstore/RESTSession"
@@ -137,8 +134,8 @@ const varVars = computed(() =>
     : aggregateVars.value
 )
 
-const envTooltipPlugin = new HoppReactiveEnvPlugin(envVars, view)
-const varTooltipPlugin = new HoppReactiveVarPlugin(varVars, view)
+const envTooltipPlugin = new HoppReactivePlugin(envVars, view)
+const varTooltipPlugin = new HoppReactivePlugin(varVars, view)
 
 const initView = (el: any) => {
   const extensions: Extension = [

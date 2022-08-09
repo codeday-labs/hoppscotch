@@ -195,24 +195,24 @@ export class HoppEnvironmentPlugin {
   }
 }
 
-export class HoppReactiveEnvPlugin {
+export class HoppReactivePlugin {
   private compartment = new Compartment()
 
-  private envs: AggregateEnvironment[] = []
+  private values: AggregateEnvironment[] | HoppRESTVar[] = []
 
   constructor(
-    envsRef: Ref<AggregateEnvironment[]>,
+    valRef: Ref<AggregateEnvironment[]> | Ref<HoppRESTVar[]>,
     private editorView: Ref<EditorView | undefined>
   ) {
     watch(
-      envsRef,
-      (envs) => {
-        this.envs = envs
+      valRef,
+      (values) => {
+        this.values = values
 
         this.editorView.value?.dispatch({
           effects: this.compartment.reconfigure([
-            cursorTooltipField(this.envs),
-            environmentHighlightStyle(this.envs),
+            cursorTooltipField(this.values),
+            environmentHighlightStyle(this.values),
           ]),
         })
       },
@@ -222,41 +222,8 @@ export class HoppReactiveEnvPlugin {
 
   get extension() {
     return this.compartment.of([
-      cursorTooltipField(this.envs),
-      environmentHighlightStyle(this.envs),
-    ])
-  }
-}
-
-export class HoppReactiveVarPlugin {
-  private compartment = new Compartment()
-
-  private vars: HoppRESTVar[] = []
-
-  constructor(
-    varsRef: Ref<HoppRESTVar[]>,
-    private editorView: Ref<EditorView | undefined>
-  ) {
-    watch(
-      varsRef,
-      (vars) => {
-        this.vars = vars
-
-        this.editorView.value?.dispatch({
-          effects: this.compartment.reconfigure([
-            cursorTooltipField(this.vars),
-            environmentHighlightStyle(this.vars),
-          ]),
-        })
-      },
-      { immediate: true }
-    )
-  }
-
-  get extension() {
-    return this.compartment.of([
-      cursorTooltipField(this.vars),
-      environmentHighlightStyle(this.vars),
+      cursorTooltipField(this.values),
+      environmentHighlightStyle(this.values),
     ])
   }
 }
